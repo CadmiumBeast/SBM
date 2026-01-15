@@ -90,15 +90,7 @@ export default function Register() {
                                 />
                             </div>
 
-                            <Button
-                                type="submit"
-                                className="mt-2 w-full"
-                                tabIndex={5}
-                                data-test="register-user-button"
-                            >
-                                {processing && <Spinner />}
-                                Create account
-                            </Button>
+                            
                         </div>
 
                         <div className="text-center text-sm text-muted-foreground">
