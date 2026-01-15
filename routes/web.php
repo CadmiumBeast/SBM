@@ -12,6 +12,13 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', function () {
+        $contentCalendars = ContentCalender::with('user')->orderBy('scheduled_date', 'desc')->paginate(10);
+        return Inertia::render('dashboard', [
+            'contentCalendars' => $contentCalendars,
+            'canCreateContentCalendar' => Features::enabled(Features::contentCalendarManagement()),
+        ]);
+    })->name('dashboard');
 });
 
 Route::middleware(['auth', 'user-access:admin'])->group(function () {

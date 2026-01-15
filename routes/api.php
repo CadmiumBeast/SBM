@@ -15,3 +15,4 @@ Route::post('/connections/connection-accepted', [\App\Http\Controllers\Connectio
 Route::post('/email/sent', [\App\Http\Controllers\EmailController::class, 'emailSent']);
 Route::post('/email/opened', [\App\Http\Controllers\EmailController::class, 'emailOpened']);
 Route::post('/email/clicked', [\App\Http\Controllers\EmailController::class, 'clickedOnLink']);
+Route::post('/email/replied', [\App\Http\Controllers\EmailController::class, 'emailReplied']);
