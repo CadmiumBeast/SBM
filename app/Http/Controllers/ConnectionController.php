@@ -146,7 +146,7 @@ class ConnectionController extends Controller
         if(!$region){
             $region = Region::create([
                 'name' => $regionname,
-                'company_id' => $company->id,
+                'company_id' => $company_details->id,
                 ]);
         }
 
