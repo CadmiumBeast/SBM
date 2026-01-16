@@ -8,6 +8,7 @@ use App\Models\Lead;
 use App\Models\Region;
 use App\Models\Tier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class ConnectionController extends Controller
 {
@@ -44,6 +45,7 @@ class ConnectionController extends Controller
             $last_action_date = $data['sent_At'] ?? now();
             $senders_status = 'Connection_Sent';
 
+            $last_action_date = Carbon::parse($last_action_date)->toDateTimeString();
 
             // Create or update connection record
             $connection = \App\Models\Connection::Create(
@@ -100,6 +102,8 @@ class ConnectionController extends Controller
             $last_action_taken = 'Connection_Accepted';
             $last_action_date = $data['sent_At'] ?? now();
             $senders_status = 'Connection_Accepted';
+
+            $last_action_date = Carbon::parse($last_action_date)->toDateTimeString();
 
 
             // Create or update connection record

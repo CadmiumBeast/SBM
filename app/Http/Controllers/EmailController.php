@@ -97,6 +97,8 @@ class EmailController extends Controller
             $sent_from = $data['subject'] ?? '';
             $is_subscribed = $data['is_subscribed'] ?? false;
 
+            $time_clicked = Carbon::parse($time_clicked)->toDateTimeString();
+
             //Check if it already exists
             $email = Email::where('lead_id', $lead_id)
                     ->where('campaign_id', $campaign->id)
@@ -157,6 +159,8 @@ class EmailController extends Controller
             $sent_from = $data['from_email'] ?? '';
             $is_subscribed = $data['is_subscribed'] ?? false;
 
+            $opened_time = Carbon::parse($opened_time)->toDateTimeString();
+
             //Check if it already exists
             $email = Email::where('lead_id', $lead_id)
                     ->where('campaign_id', $campaign->id)
@@ -214,6 +218,8 @@ class EmailController extends Controller
             $replied_time = $data['time_replied'] ?? now();
             $replied_message = $data['reply_message'] ?? '';
             $is_subscribed = $data['is_subscribed'] ?? false;
+
+            $replied_time = Carbon::parse($replied_time)->toDateTimeString();
 
             //Check if it already exists
             $email = Email::where('lead_id', $lead_id)
