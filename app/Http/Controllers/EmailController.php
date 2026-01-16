@@ -37,6 +37,8 @@ class EmailController extends Controller
             $sent_from = $data['subject'] ?? '';
             $is_subscribed = $data['is_subscribed'] ?? false;
 
+            $sent_time = Carbon::parse($sent_time)->toDateTimeString();
+
             //Check if it already exists
             $email = Email::where('lead_id', $lead_id)
                     ->where('campaign_id', $campaign->id)

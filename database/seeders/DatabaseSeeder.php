@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::firstOrCreate(
-            ['email' => 'admin@codax.online'],
+            ['email' => 'shakeel@codax.online'],
             [
                 'name' => 'admin',
                 'password' => 'Cod@x3101',
@@ -28,21 +28,21 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        Company::firstOrCreate(
-            ['name' => 'Scybers'],
-            []
-        );
+        // Company::firstOrCreate(
+        //     ['name' => 'Scybers'],
+        //     []
+        // );
 
-        Region::firstOrCreate(
-            ['name' => 'USA'],
-            [
-                'company_id' => Company::where('name', 'Scybers')->first()->id,
-            ]
-        );
+        // Region::firstOrCreate(
+        //     ['name' => 'USA'],
+        //     [
+        //         'company_id' => Company::where('name', 'Scybers')->first()->id,
+        //     ]
+        // );
 
-        Tier::firstOrCreate(
-            ['name' => 'Tier 1'],
-            []
-        );
+        // Tier::firstOrCreate(
+        //     ['name' => 'Tier 1'],
+        //     []
+        // );
     }
 }
