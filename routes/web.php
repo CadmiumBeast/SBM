@@ -16,7 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $contentCalendars = ContentCalender::with('user')->orderBy('scheduled_date', 'desc')->paginate(10);
         return Inertia::render('dashboard', [
             'contentCalendars' => $contentCalendars,
-            'canCreateContentCalendar' => Features::enabled(Features::contentCalendarManagement()),
+            'canCreateContentCalendar' => true,
         ]);
     })->name('dashboard');
 });
@@ -31,6 +31,20 @@ Route::middleware(['auth', 'user-access:admin'])->group(function () {
     Route::post('/accounts', [\App\Http\Controllers\AcountController::class, 'store'])->name('accounts.store');
     
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/two-factor', [App\Http\Controllers\TwoFactorController::class, 'show']);
+    Route::post('/two-factor/enable', [App\Http\Controllers\TwoFactorController::class, 'enable']);
+    Route::post('/two-factor/verify', [App\Http\Controllers\TwoFactorController::class, 'verify']);
+    
+    // SMS OTP 2FA routes
+    Route::post('/sms-otp/send', [App\Http\Controllers\SmsOtpController::class, 'sendOtp'])->name('sms-otp.send');
+    Route::post('/sms-otp/verify', [App\Http\Controllers\SmsOtpController::class, 'verifyOtp'])->name('sms-otp.verify');
+});
+
+// SMS 2FA challenge routes (guest routes for login flow)
+Route::post('/sms-otp/challenge', [App\Http\Controllers\SmsOtpController::class, 'challenge'])->name('sms-otp.challenge');
+Route::post('/sms-otp/verify-challenge', [App\Http\Controllers\SmsOtpController::class, 'verifyChallengeCode'])->name('sms-otp.verify-challenge');
 
 Route::post('/content-feedback/{calendarId}', [ContentController::class, 'feedback'])->name('content-feedback.store');
 Route::post('/content-calendar', [ContentController::class, 'store'])->name('content-calendar.store');

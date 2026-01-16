@@ -15,6 +15,7 @@ import { useMemo, useState } from 'react';
 
 export default function TwoFactorChallenge() {
     const [showRecoveryInput, setShowRecoveryInput] = useState<boolean>(false);
+    const [showSmsInput, setShowSmsInput] = useState<boolean>(false);
     const [code, setCode] = useState<string>('');
 
     const authConfigContent = useMemo<{
@@ -22,12 +23,21 @@ export default function TwoFactorChallenge() {
         description: string;
         toggleText: string;
     }>(() => {
+        if (showSmsInput) {
+            return {
+                title: 'SMS Verification Code',
+                description:
+                    'Enter the OTP code sent to your registered phone number.',
+                toggleText: 'use authenticator app',
+            };
+        }
+
         if (showRecoveryInput) {
             return {
                 title: 'Recovery Code',
                 description:
                     'Please confirm access to your account by entering one of your emergency recovery codes.',
-                toggleText: 'login using an authentication code',
+                toggleText: 'use authenticator app',
             };
         }
 
@@ -35,12 +45,20 @@ export default function TwoFactorChallenge() {
             title: 'Authentication Code',
             description:
                 'Enter the authentication code provided by your authenticator application.',
-            toggleText: 'login using a recovery code',
+            toggleText: 'use SMS verification',
         };
-    }, [showRecoveryInput]);
+    }, [showRecoveryInput, showSmsInput]);
 
     const toggleRecoveryMode = (clearErrors: () => void): void => {
         setShowRecoveryInput(!showRecoveryInput);
+        setShowSmsInput(false);
+        clearErrors();
+        setCode('');
+    };
+
+    const toggleSmsMode = (clearErrors: () => void): void => {
+        setShowSmsInput(!showSmsInput);
+        setShowRecoveryInput(false);
         clearErrors();
         setCode('');
     };
@@ -57,11 +75,26 @@ export default function TwoFactorChallenge() {
                     {...store.form()}
                     className="space-y-4"
                     resetOnError
-                    resetOnSuccess={!showRecoveryInput}
+                    resetOnSuccess={!showRecoveryInput && !showSmsInput}
                 >
                     {({ errors, processing, clearErrors }) => (
                         <>
-                            {showRecoveryInput ? (
+                            {showSmsInput ? (
+                                <>
+                                    <Input
+                                        name="sms_code"
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="Enter OTP from SMS"
+                                        autoFocus={showSmsInput}
+                                        maxLength={6}
+                                        required
+                                    />
+                                    <InputError
+                                        message={errors.sms_code}
+                                    />
+                                </>
+                            ) : showRecoveryInput ? (
                                 <>
                                     <Input
                                         name="recovery_code"
@@ -110,17 +143,34 @@ export default function TwoFactorChallenge() {
                                 Continue
                             </Button>
 
-                            <div className="text-center text-sm text-muted-foreground">
-                                <span>or you can </span>
-                                <button
-                                    type="button"
-                                    className="cursor-pointer text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                    onClick={() =>
-                                        toggleRecoveryMode(clearErrors)
-                                    }
-                                >
-                                    {authConfigContent.toggleText}
-                                </button>
+                            <div className="text-center text-sm text-muted-foreground space-y-2">
+                                <div>
+                                    <span>or you can </span>
+                                    <button
+                                        type="button"
+                                        className="cursor-pointer text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                        onClick={() => toggleRecoveryMode(clearErrors)}
+                                    >
+                                        {showRecoveryInput
+                                            ? 'use authenticator app'
+                                            : 'use a recovery code'}
+                                    </button>
+                                </div>
+                                
+                                {!showRecoveryInput && (
+                                    <div>
+                                        <span>or </span>
+                                        <button
+                                            type="button"
+                                            className="cursor-pointer text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                            onClick={() => toggleSmsMode(clearErrors)}
+                                        >
+                                            {showSmsInput
+                                                ? 'use authenticator app'
+                                                : 'use SMS verification'}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </>
                     )}

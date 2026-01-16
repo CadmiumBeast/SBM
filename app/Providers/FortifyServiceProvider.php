@@ -4,8 +4,12 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Actions\Fortify\SendSmsOtp;
+use App\Services\SmsOtpService;
+use Illuminate\Auth\Events\Attempting;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -31,6 +35,7 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+        $this->configureListeners();
     }
 
     /**
@@ -40,6 +45,20 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+    }
+
+    /**
+     * Configure event listeners for 2FA SMS
+     */
+    private function configureListeners(): void
+    {
+        // Listen for when user successfully authenticates with password
+        // This fires after password is verified but before 2FA check
+        Event::listen(function (\Illuminate\Auth\Events\Authenticated $event) {
+            if ($event->user->two_factor_confirmed_at && $event->user->phone_number) {
+                app(SendSmsOtp::class)($event->user);
+            }
+        });
     }
 
     /**
