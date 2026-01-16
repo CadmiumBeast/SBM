@@ -26,16 +26,19 @@ class ConnectionController extends Controller
             $tier = explode(' ', trim($campaignName))[3];
             $tierName = 'Tier '.$tier;
 
-            $lead_headline = $data['summary'] ?? '';
-            $lead_location = $data['location'] ?? '';
-            $lead_job = $data['position'] ?? '';
-            $lead_fullname = $data['full_Name'] ?? '';
-            $lead_lastname = $data['last_Name'] ?? '';
-            $lead_firstname = $data['first_Name'] ?? '';
+            $lead_headline = $data['lead']['summary'] ?? '';
+            $lead_location = $data['lead']['location'] ?? '';
+            $lead_job = $data['lead']['position'] ?? '';
+            $lead_fullname = $data['lead']['full_Name'] ?? '';
+            $lead_lastname = $data['lead']['last_Name'] ?? '';
+            $lead_firstname = $data['lead']['first_Name'] ?? '';
+            $company_Name = $data['lead']['company_name'] ?? '';
+            $profile_url = $data['lead']['profile_url'] ?? '';
+
 
             
         
-            $lead = $this->findLead($lead_job, $lead_fullname,$lead_lastname,$lead_firstname, $companyName, $lead_location, $companyName, $regionName, $tierName);
+            $lead = $this->findLead($lead_job, $lead_fullname,$lead_lastname,$lead_firstname, $company_Name, $lead_location, $companyName, $regionName, $tierName,$profile_url);
 
 
 
@@ -83,17 +86,18 @@ class ConnectionController extends Controller
             $tier = explode(' ', trim($campaignName))[3];
             $tierName = 'Tier '.$tier;
 
-            $lead_headline = $data['summary'] ?? '';
-            $lead_location = $data['location'] ?? '';
-            $lead_job = $data['position'] ?? '';
-            $lead_fullname = $data['full_Name'] ?? '';
-            $lead_lastname = $data['last_Name'] ?? '';
-            $lead_firstname = $data['first_Name'] ?? '';
-            $company_name = $data['company_name'] ?? '';
+            $lead_headline = $data['lead']['summary'] ?? '';
+            $lead_location = $data['lead']['location'] ?? '';
+            $lead_job = $data['lead']['position'] ?? '';
+            $lead_fullname = $data['lead']['full_Name'] ?? '';
+            $lead_lastname = $data['lead']['last_Name'] ?? '';
+            $lead_firstname = $data['lead']['first_Name'] ?? '';
+            $company_name = $data['lead']['company_name'] ?? '';
+            $profile_url = $data['lead']['profile_url'] ?? '';
 
             
         
-            $lead = $this->findLead($lead_job, $lead_fullname,$lead_lastname,$lead_firstname, $company_name, $lead_location, $companyName, $regionName, $tierName);
+            $lead = $this->findLead($lead_job, $lead_fullname,$lead_lastname,$lead_firstname, $company_name, $lead_location, $companyName, $regionName, $tierName,$profile_url);
 
 
 
@@ -128,11 +132,11 @@ class ConnectionController extends Controller
         }
     }
 
-    public function findLead($job, $FullName, $lastName, $firstName, $companyName, $location, $company, $regionname, $tierName)
+    public function findLead($job, $FullName, $lastName, $firstName, $companyName, $location, $company, $regionname, $tierName, $profile_url)
     {
         $company_details = Company::where('name', $company)->first();
         if(!$company_details){
-            $company_details = Company::create(['name' => $companyName]);
+            $company_details = Company::create(['name' => $company]);
         }
 
         $tier = Tier::where('name', $tierName)->first();
@@ -180,6 +184,7 @@ class ConnectionController extends Controller
                 'job_title' => $job,
                 'location' => $location,
                 'account_id' => $Account->id,
+                'profile_url' => $profile_url,
             ]);
         }
 
