@@ -29,16 +29,16 @@ class ConnectionController extends Controller
             $lead_headline = $data['lead']['summary'] ?? '';
             $lead_location = $data['lead']['location'] ?? '';
             $lead_job = $data['lead']['position'] ?? '';
-            $lead_fullname = $data['lead']['full_Name'] ?? '';
-            $lead_lastname = $data['lead']['last_Name'] ?? '';
-            $lead_firstname = $data['lead']['first_Name'] ?? '';
+            $lead_fullname = $data['lead']['full_name'] ?? '';
+            $lead_lastname = $data['lead']['last_name'] ?? '';
+            $lead_firstname = $data['lead']['first_name'] ?? '';
             $company_Name = $data['lead']['company_name'] ?? '';
             $profile_url = $data['lead']['profile_url'] ?? '';
 
 
             
         
-            $lead = $this->findLead($lead_job, $lead_fullname,$lead_lastname,$lead_firstname, $company_Name, $lead_location, $companyName, $regionName, $tierName,$profile_url);
+            $lead = $this->findLead($lead_job, $lead_fullname,$lead_lastname,$lead_firstname, $company_Name, $lead_location, $companyName, $regionName, $tierName,$profile_url,$lead_headline);
 
 
 
@@ -89,15 +89,16 @@ class ConnectionController extends Controller
             $lead_headline = $data['lead']['summary'] ?? '';
             $lead_location = $data['lead']['location'] ?? '';
             $lead_job = $data['lead']['position'] ?? '';
-            $lead_fullname = $data['lead']['full_Name'] ?? '';
-            $lead_lastname = $data['lead']['last_Name'] ?? '';
-            $lead_firstname = $data['lead']['first_Name'] ?? '';
+            $lead_fullname = $data['lead']['full_name'] ?? '';
+            $lead_lastname = $data['lead']['last_name'] ?? '';
+            $lead_firstname = $data['lead']['first_name'] ?? '';
             $company_name = $data['lead']['company_name'] ?? '';
             $profile_url = $data['lead']['profile_url'] ?? '';
 
+
             
         
-            $lead = $this->findLead($lead_job, $lead_fullname,$lead_lastname,$lead_firstname, $company_name, $lead_location, $companyName, $regionName, $tierName,$profile_url);
+            $lead = $this->findLead($lead_job, $lead_fullname,$lead_lastname,$lead_firstname, $company_name, $lead_location, $companyName, $regionName, $tierName,$profile_url,$lead_headline);
 
 
 
@@ -132,7 +133,7 @@ class ConnectionController extends Controller
         }
     }
 
-    public function findLead($job, $FullName, $lastName, $firstName, $companyName, $location, $company, $regionname, $tierName, $profile_url)
+    public function findLead($job, $FullName, $lastName, $firstName, $companyName, $location, $company, $regionname, $tierName, $profile_url, $lead_headline)
     {
         $company_details = Company::where('name', $company)->first();
         if(!$company_details){
@@ -185,6 +186,7 @@ class ConnectionController extends Controller
                 'location' => $location,
                 'account_id' => $Account->id,
                 'profile_url' => $profile_url,
+                'headline' => $lead_headline,
             ]);
         }
 

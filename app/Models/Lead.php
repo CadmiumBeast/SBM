@@ -18,6 +18,7 @@ class Lead extends Model
         'priority',
         'follow_company',
         'account_id',
+        'profile_url'
     ];
 
     public function account()

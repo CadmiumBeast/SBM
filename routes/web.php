@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\ContentController;
+use App\Http\Controllers\AcountController;
 use App\Models\Company;
 use App\Models\ContentCalender;
 
@@ -27,8 +28,9 @@ Route::middleware(['auth', 'user-access:admin'])->group(function () {
     Route::resource('tiers', \App\Http\Controllers\TierController::class);
     
     // Account routes
-    Route::get('/accounts', [\App\Http\Controllers\AcountController::class, 'index'])->name('accounts.index');
-    Route::post('/accounts', [\App\Http\Controllers\AcountController::class, 'store'])->name('accounts.store');
+    Route::get('/accounts', [AcountController::class, 'index'])->name('accounts.index');
+    Route::post('/accounts', [AcountController::class, 'store'])->name('accounts.store');
+    Route::post('/accounts/import', [AcountController::class, 'import'])->name('accounts.import');
     
 });
 
