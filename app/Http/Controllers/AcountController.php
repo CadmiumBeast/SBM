@@ -40,9 +40,15 @@ class AcountController extends Controller
         $company_id = $request->input('company_id');
 
         $accounts = \App\Models\Account::where('company_id', $company_id)->get();
+        $company = \App\Models\Company::all();
+        $regions = \App\Models\Region::all();
+        $tiers = \App\Models\Tier::all();
 
         return Inertia::render('accounts/index', [
             'accounts' => $accounts,
+            'companies' => $company,
+            'regions' => $regions,
+            'tiers' => $tiers,
         ]); 
     }
 }
