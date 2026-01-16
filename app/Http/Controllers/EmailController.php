@@ -10,6 +10,7 @@ use App\Models\Company;
 use App\Models\Lead;
 use App\Models\Region;
 use App\Models\Tier;
+use Illuminate\Support\Carbon;
 
 class EmailController extends Controller
 {
