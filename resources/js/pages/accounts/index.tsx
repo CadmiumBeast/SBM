@@ -20,8 +20,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Upload, FileText } from 'lucide-react';
+import { AlertCircle, Upload, FileText, ChevronRight, Mail, Briefcase, MapPin } from 'lucide-react';
 import { router } from '@inertiajs/react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Company {
   id: number;
@@ -37,6 +38,27 @@ interface Region {
 interface Tier {
   id: number;
   name: string;
+}
+
+interface Account {
+  id: number;
+  name: string;
+  domain: string;
+  company_id: number;
+  region_id: number;
+  tier_id: number;
+}
+
+interface Lead {
+  id: number;
+  first_name: string;
+  last_name: string;
+  headline: string;
+  job_title: string;
+  location: string;
+  work_email: string;
+  account_id: number;
+  full_name?: string;
 }
 
 interface ColumnMapping {
@@ -67,7 +89,7 @@ const LEAD_FIELDS = [
 ];
 
 export default function AccountsIndex() {
-  const { companies, regions, tiers } = usePage().props;
+  const { companies, regions, tiers, accounts, leads } = usePage().props;
 
   // Modal and Upload State
   const [showImportModal, setShowImportModal] = useState(false);
@@ -80,6 +102,10 @@ export default function AccountsIndex() {
   const [selectedRegion, setSelectedRegion] = useState<string>('none');
   const [selectedTier, setSelectedTier] = useState<string>('none');
 
+  // Account and Leads View State
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [accountLeads, setAccountLeads] = useState<Lead[]>([]);
+
   // UI State
   const [step, setStep] = useState<'upload' | 'mapping' | 'review'>('upload');
   const [loading, setLoading] = useState(false);
@@ -91,12 +117,27 @@ export default function AccountsIndex() {
   const typedCompanies = companies as Company[];
   const typedRegions = regions as Region[];
   const typedTiers = tiers as Tier[];
+  const typedAccounts = accounts as Account[];
+  const typedLeads = leads as Lead[];
 
   // Filter regions based on selected company
   const filteredRegions =
     selectedCompany !== 'none'
       ? typedRegions.filter((r) => r.company_id === parseInt(selectedCompany))
       : [];
+
+  // Handle account click - show leads from this account
+  const handleAccountClick = (account: Account) => {
+    setSelectedAccount(account);
+    const accountLeadsList = typedLeads.filter((lead) => lead.account_id === account.id);
+    setAccountLeads(accountLeadsList);
+  };
+
+  // Close account details
+  const handleCloseAccountDetails = () => {
+    setSelectedAccount(null);
+    setAccountLeads([]);
+  };
 
   // Handle file selection and CSV parsing
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,12 +204,40 @@ export default function AccountsIndex() {
 
         setCsvData({ headers, rows });
 
-        // Initialize column mapping with default 'skip' values
-        const initialMapping: ColumnMapping = {};
+        // Auto-detect and map columns based on header names
+        const autoMapping: ColumnMapping = {};
         headers.forEach((header) => {
-          initialMapping[header] = 'skip';
+          const lowerHeader = header.toLowerCase().trim();
+          
+          // Define mapping rules for auto-detection
+          let mappedField = 'skip';
+          
+          if (lowerHeader.includes('profile') && lowerHeader.includes('url')) {
+            mappedField = 'profile_url';
+          } else if (lowerHeader.includes('first') && lowerHeader.includes('name')) {
+            mappedField = 'first_name';
+          } else if (lowerHeader.includes('last') && lowerHeader.includes('name')) {
+            mappedField = 'last_name';
+          } else if (lowerHeader === 'full name' || lowerHeader === 'fullname') {
+            mappedField = 'full_name';
+          } else if (lowerHeader.includes('headline')) {
+            mappedField = 'headline';
+          } else if (lowerHeader.includes('job') && lowerHeader.includes('title')) {
+            mappedField = 'job_title';
+          } else if (lowerHeader.includes('location')) {
+            mappedField = 'location';
+          } else if (lowerHeader === 'company') {
+            mappedField = 'company';
+          } else if (lowerHeader.includes('domain') && lowerHeader.includes('company')) {
+            mappedField = 'company_domain';
+          } else if (lowerHeader.includes('email') || lowerHeader.includes('work email')) {
+            mappedField = 'work_email';
+          }
+          
+          autoMapping[header] = mappedField;
         });
-        setColumnMapping(initialMapping);
+
+        setColumnMapping(autoMapping);
 
         setStep('mapping');
         setError(null);
@@ -227,6 +296,8 @@ export default function AccountsIndex() {
         csv_rows: csvData?.rows || [],
       };
 
+
+
       router.post('/accounts/import', payload, {
         onError: (errors: any) => {
           setError(errors.message || 'Failed to import leads');
@@ -269,13 +340,168 @@ export default function AccountsIndex() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Accounts</h1>
-            <p className="text-muted-foreground mt-1">Manage your accounts and leads</p>
+            <p className="text-muted-foreground mt-1">
+              {selectedAccount
+                ? `${selectedAccount.name} - Leads (${accountLeads.length})`
+                : `Manage your accounts and leads (${typedAccounts.length} accounts)`}
+            </p>
           </div>
-          <Button onClick={() => setShowImportModal(true)} size="lg">
-            <Upload className="mr-2 h-4 w-4" />
-            Import
-          </Button>
+          <div className="flex gap-2">
+            {selectedAccount && (
+              <Button variant="outline" onClick={handleCloseAccountDetails}>
+                Back to Accounts
+              </Button>
+            )}
+            <Button onClick={() => setShowImportModal(true)} size="lg">
+              <Upload className="mr-2 h-4 w-4" />
+              Import
+            </Button>
+          </div>
         </div>
+
+        {/* Accounts List View */}
+        {!selectedAccount ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {typedAccounts.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground text-lg">No accounts found</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Import leads to create accounts
+                </p>
+              </div>
+            ) : (
+              typedAccounts.map((account) => {
+                const accountLeadCount = typedLeads.filter((l) => l.account_id === account.id).length;
+                const company = typedCompanies.find((c) => c.id === account.company_id);
+                const tier = typedTiers.find((t) => t.id === account.tier_id);
+                const region = typedRegions.find((r) => r.id === account.region_id);
+
+                return (
+                  <Card
+                    key={account.id}
+                    className="cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => handleAccountClick(account)}
+                  >
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <span className="truncate">{account.name}</span>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </CardTitle>
+                      <CardDescription className="truncate">{account.domain}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">{company?.name || 'Unknown'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">{region?.name || 'Unknown'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">Tier:</span>
+                        <span className="text-sm text-muted-foreground">{tier?.name || 'Unknown'}</span>
+                      </div>
+                      <div className="pt-2 border-t">
+                        <span className="text-lg font-bold text-primary">{accountLeadCount}</span>
+                        <span className="text-sm text-muted-foreground ml-2">
+                          {accountLeadCount === 1 ? 'lead' : 'leads'}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </div>
+        ) : (
+          /* Leads Details View */
+          <div className="space-y-4">
+            {accountLeads.length === 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>No leads found</CardTitle>
+                  <CardDescription>
+                    Import leads or add them manually to see them here
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {accountLeads.map((lead) => (
+                  <Card key={lead.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="pt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {/* Name */}
+                        <div>
+                          <p className="text-sm text-muted-foreground font-medium">Name</p>
+                          <p className="text-base font-semibold">
+                            {lead.full_name || `${lead.first_name || ''} ${lead.last_name || ''}`.trim() || '-'}
+                          </p>
+                        </div>
+
+                        {/* Job Title */}
+                        <div>
+                          <p className="text-sm text-muted-foreground font-medium">Job Title</p>
+                          <p className="text-base">{lead.job_title || '-'}</p>
+                        </div>
+
+                        {/* Email */}
+                        <div>
+                          <p className="text-sm text-muted-foreground font-medium">Email</p>
+                          {lead.work_email ? (
+                            <a
+                              href={`mailto:${lead.work_email}`}
+                              className="text-base text-blue-600 hover:underline flex items-center gap-1"
+                            >
+                              <Mail className="h-4 w-4" />
+                              {lead.work_email}
+                            </a>
+                          ) : (
+                            <p className="text-base">-</p>
+                          )}
+                        </div>
+
+                        {/* Headline */}
+                        <div>
+                          <p className="text-sm text-muted-foreground font-medium">Headline</p>
+                          <p className="text-base text-muted-foreground line-clamp-2">{lead.headline || '-'}</p>
+                        </div>
+
+                        {/* Location */}
+                        <div>
+                          <p className="text-sm text-muted-foreground font-medium">Location</p>
+                          <p className="text-base flex items-center gap-1">
+                            {lead.location ? (
+                              <>
+                                <MapPin className="h-4 w-4" />
+                                {lead.location}
+                              </>
+                            ) : (
+                              '-'
+                            )}
+                          </p>
+                        </div>
+
+                        {/* First Name */}
+                        <div>
+                          <p className="text-sm text-muted-foreground font-medium">First Name</p>
+                          <p className="text-base">{lead.first_name || '-'}</p>
+                        </div>
+
+                        {/* Last Name */}
+                        <div>
+                          <p className="text-sm text-muted-foreground font-medium">Last Name</p>
+                          <p className="text-base">{lead.last_name || '-'}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Import Modal */}
         <Dialog open={showImportModal} onOpenChange={handleCloseModal}>
@@ -437,8 +663,76 @@ export default function AccountsIndex() {
                       <Button variant="outline" onClick={() => setStep('upload')}>
                         Back
                       </Button>
+                      <Button onClick={handleProceedToReview} disabled={loading}>
+                        {loading ? 'Processing...' : 'Continue to Review'}
+                      </Button>
+                    </DialogFooter>
+                  </>
+                )}
+
+                {/* Review Step */}
+                {step === 'review' && (
+                  <>
+                    <DialogHeader>
+                      <DialogTitle>Review Import</DialogTitle>
+                      <DialogDescription>
+                        Review the data before importing to your system.
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-4 py-4">
+                      {/* Summary Cards */}
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="border rounded p-3 bg-muted/30">
+                          <p className="text-xs text-muted-foreground font-medium">Company</p>
+                          <p className="text-sm font-semibold mt-1">
+                            {typedCompanies.find((c) => c.id.toString() === selectedCompany)?.name || '-'}
+                          </p>
+                        </div>
+                        <div className="border rounded p-3 bg-muted/30">
+                          <p className="text-xs text-muted-foreground font-medium">Region</p>
+                          <p className="text-sm font-semibold mt-1">
+                            {typedRegions.find((r) => r.id.toString() === selectedRegion)?.name || '-'}
+                          </p>
+                        </div>
+                        <div className="border rounded p-3 bg-muted/30">
+                          <p className="text-xs text-muted-foreground font-medium">Tier</p>
+                          <p className="text-sm font-semibold mt-1">
+                            {typedTiers.find((t) => t.id.toString() === selectedTier)?.name || '-'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Import Stats */}
+                      <div className="border rounded p-3 bg-primary/5">
+                        <p className="text-xs text-muted-foreground font-medium">Total Rows</p>
+                        <p className="text-2xl font-bold text-primary mt-1">{csvData?.rows.length}</p>
+                      </div>
+
+                      {/* Mapped Fields */}
+                      <div className="border rounded p-3">
+                        <p className="text-sm font-semibold mb-3">Mapped Fields</p>
+                        <div className="space-y-2">
+                          {Object.entries(columnMapping)
+                            .filter(([_, field]) => field !== 'skip')
+                            .map(([csv, field]) => (
+                              <div key={csv} className="flex items-center justify-between text-sm">
+                                <span className="font-medium text-muted-foreground">{csv}</span>
+                                <span className="text-primary">
+                                  {LEAD_FIELDS.find((f) => f.value === field)?.label}
+                                </span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setStep('mapping')}>
+                        Back
+                      </Button>
                       <Button onClick={handleSubmit} disabled={loading}>
-                        {loading ? 'Importing...' : 'Import Data'}
+                        {loading ? 'Importing...' : 'Confirm Import'}
                       </Button>
                     </DialogFooter>
                   </>

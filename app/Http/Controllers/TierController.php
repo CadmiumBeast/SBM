@@ -29,7 +29,7 @@ class TierController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:tiers,name',
         ]);
 
         Tier::create([
@@ -49,12 +49,22 @@ class TierController extends Controller
     }
 
     /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Tier $tier)
+    {
+        return inertia('tiers/edit', [
+            'tier' => $tier,
+        ]);
+    }
+
+    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Tier $tier)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:tiers,name,' . $tier->id,
         ]);
 
         $tier->update([

@@ -53,22 +53,22 @@ const mainNavItems = [
     },
     {
         title: 'Company',
-        href: '#',
+        href: '/companies',
         icon: Factory,
     },
     {
         title: 'Region',
-        href: '#',
+        href: '/regions',
         icon: Globe,
     },
     {
         title: 'Tier',
-        href: '#',
+        href: '/tiers',
         icon: Layers,
     },
     {
         title: 'Users',
-        href: '#',
+        href: '/users',
         icon: Users,
     }
 ];

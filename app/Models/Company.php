@@ -31,4 +31,9 @@ class Company extends Model
     {
         return $this->hasMany(ContentCalender::class);
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
 }

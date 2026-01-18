@@ -22,7 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
+        'type',
+        'company_id',
     ];
 
     /**
@@ -54,5 +55,10 @@ class User extends Authenticatable
     public function contentFeedbacks()
     {
         return $this->hasMany(ContentFeedback::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

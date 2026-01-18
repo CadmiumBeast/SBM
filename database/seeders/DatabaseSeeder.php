@@ -16,17 +16,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        
 
-        // User::firstOrCreate(
-        //     ['email' => 'shakeel@codax.online'],
-        //     [
-        //         'name' => 'admin',
-        //         'password' => 'Cod@x3101',
-        //         'email_verified_at' => now(),
-        //         'type' => 'admin',
-        //     ]
-        // );
+        User::firstOrCreate(
+            ['email' => 'shakeel@codax.online'],
+            [
+                'name' => 'admin',
+                'password' => 'Cod@x3101',
+                'email_verified_at' => now(),
+                'type' => 'admin',
+            ]
+        );
 
         Company::firstOrCreate(
             ['name' => 'Scybers'],

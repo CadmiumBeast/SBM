@@ -14,7 +14,7 @@ class RegionController extends Controller
      */
     public function index()
     {
-        $regions = Region::all();
+        $regions = Region::with('company')->get();
         return Inertia::render('regions/index', [
             'regions' => $regions,
         ]);
@@ -80,6 +80,8 @@ class RegionController extends Controller
             'name' => $validated['name'],
             'company_id' => $validated['company_id'],
         ]);
+
+        return redirect()->route('regions.index');
     }
 
     /**

@@ -31,6 +31,9 @@ Route::middleware(['auth', 'user-access:admin'])->group(function () {
     Route::get('/accounts', [AcountController::class, 'index'])->name('accounts.index');
     Route::post('/accounts', [AcountController::class, 'store'])->name('accounts.store');
     Route::post('/accounts/import', [AcountController::class, 'import'])->name('accounts.import');
+
+    // User management routes
+    Route::resource('users', \App\Http\Controllers\UserController::class);
     
 });
 
